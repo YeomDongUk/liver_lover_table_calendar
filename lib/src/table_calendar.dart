@@ -6,6 +6,7 @@ import 'dart:math';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:simple_gesture_detector/simple_gesture_detector.dart';
+import 'package:table_calendar/src/controller/table_calendar_controller.dart';
 
 import 'customization/calendar_builders.dart';
 import 'customization/calendar_style.dart';
@@ -200,6 +201,7 @@ class TableCalendar<T> extends StatefulWidget {
 
   /// Called when the calendar is created. Exposes its PageController.
   final void Function(PageController pageController)? onCalendarCreated;
+  final DateTime? initalSelectedDate;
 
   /// Creates a `TableCalendar` widget.
   TableCalendar({
@@ -256,6 +258,7 @@ class TableCalendar<T> extends StatefulWidget {
     this.onPageChanged,
     this.onFormatChanged,
     this.onCalendarCreated,
+    this.initalSelectedDate,
   })  : assert(availableCalendarFormats.keys.contains(calendarFormat)),
         assert(availableCalendarFormats.length <= CalendarFormat.values.length),
         assert(weekendDays.isNotEmpty
@@ -283,6 +286,11 @@ class _TableCalendarState<T> extends State<TableCalendar<T>> {
     super.initState();
     _focusedDay = ValueNotifier(widget.focusedDay);
     _rangeSelectionMode = widget.rangeSelectionMode;
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      if (widget.initalSelectedDate != null) {
+        _onDayTapped(widget.initalSelectedDate!);
+      }
+    });
   }
 
   @override
@@ -445,33 +453,31 @@ class _TableCalendarState<T> extends State<TableCalendar<T>> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        if (widget.headerVisible)
-          ValueListenableBuilder<DateTime>(
-            valueListenable: _focusedDay,
-            builder: (context, value, _) {
-              return CalendarHeader(
-                headerTitleBuilder: widget.calendarBuilders.headerTitleBuilder,
-                focusedMonth: value,
-                onLeftChevronTap: _onLeftChevronTap,
-                onRightChevronTap: _onRightChevronTap,
-                onHeaderTap: () => widget.onHeaderTapped?.call(value),
-                onHeaderLongPress: () =>
-                    widget.onHeaderLongPressed?.call(value),
-                headerStyle: widget.headerStyle,
-                availableCalendarFormats: widget.availableCalendarFormats,
-                calendarFormat: widget.calendarFormat,
-                locale: widget.locale,
-                onFormatButtonTap: (format) {
-                  assert(
-                    widget.onFormatChanged != null,
-                    'Using `FormatButton` without providing `onFormatChanged` will have no effect.',
-                  );
+        ValueListenableBuilder<DateTime>(
+          valueListenable: _focusedDay,
+          builder: (context, value, _) {
+            return CalendarHeader(
+              headerTitleBuilder: widget.calendarBuilders.headerTitleBuilder,
+              focusedMonth: value,
+              onLeftChevronTap: _onLeftChevronTap,
+              onRightChevronTap: _onRightChevronTap,
+              onHeaderTap: () => widget.onHeaderTapped?.call(value),
+              onHeaderLongPress: () => widget.onHeaderLongPressed?.call(value),
+              headerStyle: widget.headerStyle,
+              availableCalendarFormats: widget.availableCalendarFormats,
+              calendarFormat: widget.calendarFormat,
+              locale: widget.locale,
+              onFormatButtonTap: (format) {
+                assert(
+                  widget.onFormatChanged != null,
+                  'Using `FormatButton` without providing `onFormatChanged` will have no effect.',
+                );
 
-                  widget.onFormatChanged?.call(format);
-                },
-              );
-            },
-          ),
+                widget.onFormatChanged?.call(format);
+              },
+            );
+          },
+        ),
         Flexible(
           flex: widget.shouldFillViewport ? 1 : 0,
           child: TableCalendarBase(
@@ -615,49 +621,49 @@ class _TableCalendarState<T> extends State<TableCalendar<T>> {
 
         children.add(content);
 
-        if (!isDisabled) {
-          final events = widget.eventLoader?.call(day) ?? [];
-          Widget? markerWidget =
-              widget.calendarBuilders.markerBuilder?.call(context, day, events);
+        // if (!isDisabled) {
+        final events = widget.eventLoader?.call(day) ?? [];
+        Widget? markerWidget =
+            widget.calendarBuilders.markerBuilder?.call(context, day, events);
 
-          if (events.isNotEmpty && markerWidget == null) {
-            final center = constraints.maxHeight / 2;
+        if (events.isNotEmpty && markerWidget == null) {
+          final center = constraints.maxHeight / 2;
 
-            final markerSize = widget.calendarStyle.markerSize ??
-                (shorterSide - widget.calendarStyle.cellMargin.vertical) *
-                    widget.calendarStyle.markerSizeScale;
+          final markerSize = widget.calendarStyle.markerSize ??
+              (shorterSide - widget.calendarStyle.cellMargin.vertical) *
+                  widget.calendarStyle.markerSizeScale;
 
-            final markerAutoAlignmentTop = center +
-                (shorterSide - widget.calendarStyle.cellMargin.vertical) / 2 -
-                (markerSize * widget.calendarStyle.markersAnchor);
+          final markerAutoAlignmentTop = center +
+              (shorterSide - widget.calendarStyle.cellMargin.vertical) / 2 -
+              (markerSize * widget.calendarStyle.markersAnchor);
 
-            markerWidget = PositionedDirectional(
-              top: widget.calendarStyle.markersAutoAligned
-                  ? markerAutoAlignmentTop
-                  : widget.calendarStyle.markersOffset.top,
-              bottom: widget.calendarStyle.markersAutoAligned
-                  ? null
-                  : widget.calendarStyle.markersOffset.bottom,
-              start: widget.calendarStyle.markersAutoAligned
-                  ? null
-                  : widget.calendarStyle.markersOffset.start,
-              end: widget.calendarStyle.markersAutoAligned
-                  ? null
-                  : widget.calendarStyle.markersOffset.end,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: events
-                    .take(widget.calendarStyle.markersMaxCount)
-                    .map((event) => _buildSingleMarker(day, event, markerSize))
-                    .toList(),
-              ),
-            );
-          }
-
-          if (markerWidget != null) {
-            children.add(markerWidget);
-          }
+          markerWidget = PositionedDirectional(
+            top: widget.calendarStyle.markersAutoAligned
+                ? markerAutoAlignmentTop
+                : widget.calendarStyle.markersOffset.top,
+            bottom: widget.calendarStyle.markersAutoAligned
+                ? null
+                : widget.calendarStyle.markersOffset.bottom,
+            start: widget.calendarStyle.markersAutoAligned
+                ? null
+                : widget.calendarStyle.markersOffset.start,
+            end: widget.calendarStyle.markersAutoAligned
+                ? null
+                : widget.calendarStyle.markersOffset.end,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: events
+                  .take(widget.calendarStyle.markersMaxCount)
+                  .map((event) => _buildSingleMarker(day, event, markerSize))
+                  .toList(),
+            ),
+          );
         }
+
+        if (markerWidget != null) {
+          children.add(markerWidget);
+        }
+        // }
 
         return Stack(
           alignment: widget.calendarStyle.markersAlignment,
@@ -706,13 +712,13 @@ class _TableCalendarState<T> extends State<TableCalendar<T>> {
   }
 
   DateTime _firstDayOfMonth(DateTime month) {
-    return DateTime.utc(month.year, month.month, 1);
+    return DateTime(month.year, month.month, 1);
   }
 
   DateTime _lastDayOfMonth(DateTime month) {
     final date = month.month < 12
-        ? DateTime.utc(month.year, month.month + 1, 1)
-        : DateTime.utc(month.year + 1, 1, 1);
+        ? DateTime(month.year, month.month + 1, 1)
+        : DateTime(month.year + 1, 1, 1);
     return date.subtract(const Duration(days: 1));
   }
 

@@ -64,11 +64,14 @@ class CellContent extends StatelessWidget {
     final margin = calendarStyle.cellMargin;
     final padding = calendarStyle.cellPadding;
     final alignment = calendarStyle.cellAlignment;
+    final size = Size(43, 43);
     final duration = const Duration(milliseconds: 250);
 
     if (isDisabled) {
       cell = calendarBuilders.disabledBuilder?.call(context, day, focusedDay) ??
           AnimatedContainer(
+            width: size.width,
+            height: size.height,
             duration: duration,
             margin: margin,
             padding: padding,
@@ -79,6 +82,8 @@ class CellContent extends StatelessWidget {
     } else if (isSelected) {
       cell = calendarBuilders.selectedBuilder?.call(context, day, focusedDay) ??
           AnimatedContainer(
+            width: size.width,
+            height: size.height,
             duration: duration,
             margin: margin,
             padding: padding,
@@ -90,6 +95,8 @@ class CellContent extends StatelessWidget {
       cell =
           calendarBuilders.rangeStartBuilder?.call(context, day, focusedDay) ??
               AnimatedContainer(
+                width: size.width,
+                height: size.height,
                 duration: duration,
                 margin: margin,
                 padding: padding,
@@ -100,6 +107,8 @@ class CellContent extends StatelessWidget {
     } else if (isRangeEnd) {
       cell = calendarBuilders.rangeEndBuilder?.call(context, day, focusedDay) ??
           AnimatedContainer(
+            width: size.width,
+            height: size.height,
             duration: duration,
             margin: margin,
             padding: padding,
@@ -110,6 +119,8 @@ class CellContent extends StatelessWidget {
     } else if (isToday && isTodayHighlighted) {
       cell = calendarBuilders.todayBuilder?.call(context, day, focusedDay) ??
           AnimatedContainer(
+            width: size.width,
+            height: size.height,
             duration: duration,
             margin: margin,
             padding: padding,
@@ -120,6 +131,8 @@ class CellContent extends StatelessWidget {
     } else if (isHoliday) {
       cell = calendarBuilders.holidayBuilder?.call(context, day, focusedDay) ??
           AnimatedContainer(
+            width: size.width,
+            height: size.height,
             duration: duration,
             margin: margin,
             padding: padding,
@@ -131,6 +144,8 @@ class CellContent extends StatelessWidget {
       cell =
           calendarBuilders.withinRangeBuilder?.call(context, day, focusedDay) ??
               AnimatedContainer(
+                width: size.width,
+                height: size.height,
                 duration: duration,
                 margin: margin,
                 padding: padding,
@@ -141,6 +156,8 @@ class CellContent extends StatelessWidget {
     } else if (isOutside) {
       cell = calendarBuilders.outsideBuilder?.call(context, day, focusedDay) ??
           AnimatedContainer(
+            width: size.width,
+            height: size.height,
             duration: duration,
             margin: margin,
             padding: padding,
@@ -151,6 +168,8 @@ class CellContent extends StatelessWidget {
     } else {
       cell = calendarBuilders.defaultBuilder?.call(context, day, focusedDay) ??
           AnimatedContainer(
+            width: size.width,
+            height: size.height,
             duration: duration,
             margin: margin,
             padding: padding,

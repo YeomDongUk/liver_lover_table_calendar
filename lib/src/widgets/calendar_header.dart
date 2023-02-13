@@ -1,6 +1,7 @@
 // Copyright 2019 Aleksander Woźniak
 // SPDX-License-Identifier: Apache-2.0
 
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 
@@ -40,25 +41,25 @@ class CalendarHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = headerStyle.titleTextFormatter?.call(focusedMonth, locale) ??
-        DateFormat.yMMMM(locale).format(focusedMonth);
+        DateFormat('yyyy.MM', locale).format(focusedMonth);
 
-    return Container(
-      decoration: headerStyle.decoration,
-      margin: headerStyle.headerMargin,
-      padding: headerStyle.headerPadding,
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          if (headerStyle.leftChevronVisible)
-            CustomIconButton(
-              icon: headerStyle.leftChevronIcon,
-              onTap: onLeftChevronTap,
-              margin: headerStyle.leftChevronMargin,
-              padding: headerStyle.leftChevronPadding,
-            ),
-          Expanded(
-            child: headerTitleBuilder?.call(context, focusedMonth) ??
-                GestureDetector(
+    return Material(
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(color: Theme.of(context).dividerColor),
+          ),
+        ),
+        height: 68,
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            IconButton(
+                onPressed: onLeftChevronTap, icon: headerStyle.leftChevronIcon),
+            Expanded(
+              child: Center(
+                child: GestureDetector(
                   onTap: onHeaderTap,
                   onLongPress: onHeaderLongPress,
                   child: Text(
@@ -69,29 +70,14 @@ class CalendarHeader extends StatelessWidget {
                         : TextAlign.start,
                   ),
                 ),
-          ),
-          if (headerStyle.formatButtonVisible &&
-              availableCalendarFormats.length > 1)
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: FormatButton(
-                onTap: onFormatButtonTap,
-                availableCalendarFormats: availableCalendarFormats,
-                calendarFormat: calendarFormat,
-                decoration: headerStyle.formatButtonDecoration,
-                padding: headerStyle.formatButtonPadding,
-                textStyle: headerStyle.formatButtonTextStyle,
-                showsNextFormat: headerStyle.formatButtonShowsNext,
               ),
             ),
-          if (headerStyle.rightChevronVisible)
-            CustomIconButton(
+            IconButton(
+              onPressed: onRightChevronTap,
               icon: headerStyle.rightChevronIcon,
-              onTap: onRightChevronTap,
-              margin: headerStyle.rightChevronMargin,
-              padding: headerStyle.rightChevronPadding,
             ),
-        ],
+          ],
+        ),
       ),
     );
   }
